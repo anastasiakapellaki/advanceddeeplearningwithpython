@@ -87,8 +87,7 @@ class SetDataset(Dataset):
         label = self.labels[idx]
 
         return set_input, label
-    X, neighbor_features, y_original, y_modified, neighbor_indices = \
-    createdataset()
+   
 
 dataset = SetDataset(
     X,
