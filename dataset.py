@@ -4,8 +4,8 @@ from sklearn.model_selection import train_test_split
 import torch
 from torch.utils.data import Dataset, DataLoader
 
-
-def create_synthetic_dataset(
+print("Το script ξεκίνησε")
+def createdataset(
     n_samples=5000,
     d=16,
     k=10,
@@ -14,15 +14,9 @@ def create_synthetic_dataset(
     seed=42
 ):
     np.random.seed(seed)
-
-    # 1. Δημιουργία labels 0/1
-    y = np.random.randint(0, 2, size=n_samples)
-
-    # 2. Μέσοι όροι για τις δύο κλάσεις
+    y = np.random.randint(0, 2, size=n_samples)    
     mu0 = np.zeros(d)
     mu1 = np.ones(d) * 3.0
-
-    # 3. Δημιουργία σημείων x_i ~ N(mu_y, sigma^2 I)
     X = np.zeros((n_samples, d))
 
     for i in range(n_samples):
@@ -31,29 +25,78 @@ def create_synthetic_dataset(
         else:
             X[i] = np.random.normal(mu1, sigma, size=d)
 
-    # 4. Βρες k-nearest neighbors
-    # βάζουμε k+1 γιατί ο κοντινότερος γείτονας είναι το ίδιο το σημείο
     knn = NearestNeighbors(n_neighbors=k + 1, metric="euclidean")
     knn.fit(X)
 
     distances, indices = knn.kneighbors(X)
 
-    # αφαιρούμε το ίδιο το σημείο
-    neighbor_indices = indices[:, 1:]
+    
+    neighborindices = indices[:, 1:]
 
-    # 5. Labels γειτόνων
-    neighbor_labels = y[neighbor_indices]
+    
+    neighborlabels = y[neighborindices]
 
-    # 6. Μέσο label γειτονιάς
-    avg_neighbor_label = neighbor_labels.mean(axis=1)
+    
+    averageneighborlabel = neighborlabels.mean(axis=1)
 
-    # 7. Label flipping
+       
     y_modified = y.copy()
 
-    ambiguous = np.abs(avg_neighbor_label - 0.5) < epsilon
+    ambiguous = np.abs(averageneighborlabel - 0.5) < epsilon
     y_modified[ambiguous] = 1 - y_modified[ambiguous]
 
-    # 8. Features γειτόνων
-    neighbor_features = X[neighbor_indices]
+    
+    neighborfeatures = X[neighborindices]
 
-    return X, neighbor_features, y, y_modified, neighbor_indices
+    return X, neighborfeatures, y, y_modified, neighborindices
+
+X, neighbor_features, y_original, y_modified, neighbor_indices = createdataset()
+
+print("X:", X.shape)
+print("Neighbors:", neighbor_features.shape)
+print("Original labels:", y_original.shape)
+print("Modified labels:", y_modified.shape)
+class SetDataset(Dataset):
+    def __init__(self, X, neighbor_features, labels):
+        self.X = torch.tensor(X, dtype=torch.float32)
+        self.neighbors = torch.tensor(
+            neighbor_features,
+            dtype=torch.float32
+        )
+        self.labels = torch.tensor(
+            labels,
+            dtype=torch.long
+        )
+
+    def __len__(self):
+        return len(self.labels)
+
+    def __getitem__(self, idx):
+        
+        point = self.X[idx].unsqueeze(0)
+
+        
+        neighbors = self.neighbors[idx]
+
+        
+        set_input = torch.cat(
+            [point, neighbors],
+            dim=0
+        )
+
+        label = self.labels[idx]
+
+        return set_input, label
+    X, neighbor_features, y_original, y_modified, neighbor_indices = \
+    createdataset()
+
+dataset = SetDataset(
+    X,
+    neighbor_features,
+    y_modified
+)
+loader = DataLoader(
+    dataset,
+    batch_size=64,
+    shuffle=True
+)
