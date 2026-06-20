@@ -100,3 +100,10 @@ loader = DataLoader(
     batch_size=64,
     shuffle=True
 )
+
+torch.save({
+    "dataset": dataset,
+    "y_original": y_original,
+    "neighbor_indices": neighbor_indices,
+    "y_modified": y_modified
+}, "dataset.pt")
