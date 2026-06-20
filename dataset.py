@@ -9,14 +9,14 @@ def createdataset(
     n_samples=5000,
     d=16,
     k=10,
-    epsilon=0.15,
+    epsilon=0.25,
     sigma=1.0,
     seed=42
 ):
     np.random.seed(seed)
     y = np.random.randint(0, 2, size=n_samples)    
     mu0 = np.zeros(d)
-    mu1 = np.ones(d) * 3.0
+    mu1 = np.ones(d) * 1.0
     X = np.zeros((n_samples, d))
 
     for i in range(n_samples):
@@ -44,7 +44,8 @@ def createdataset(
 
     ambiguous = np.abs(averageneighborlabel - 0.5) < epsilon
     y_modified[ambiguous] = 1 - y_modified[ambiguous]
-
+    print("Ambiguous samples:", ambiguous.sum())
+    print("Percentage:", 100 * ambiguous.mean(), "%")
     
     neighborfeatures = X[neighborindices]
 
