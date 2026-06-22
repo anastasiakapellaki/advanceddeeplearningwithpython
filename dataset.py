@@ -2,11 +2,11 @@ import numpy as np
 from sklearn.neighbors import NearestNeighbors
 from sklearn.model_selection import train_test_split
 import torch
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
 
 print("Το script ξεκίνησε")
 def createdataset(
-    n_samples=5000,
+    n_samples=50000,
     d=16,
     k=10,
     epsilon=0.25,
@@ -94,11 +94,6 @@ dataset = SetDataset(
     X,
     neighbor_features,
     y_modified
-)
-loader = DataLoader(
-    dataset,
-    batch_size=64, #each batch will be (batch_size, k+1 , d)
-    shuffle=True
 )
 
 # Train / val / test split, computed ONCE here so every downstream task
