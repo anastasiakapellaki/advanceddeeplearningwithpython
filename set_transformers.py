@@ -4,8 +4,6 @@ import math
 import numpy as np
 from torch.utils.data import DataLoader
 from torch.utils.data import Subset
-from dataset import SetDataset
-from citeseer import CiteseerSetDataset
 import copy
 
 
@@ -340,6 +338,9 @@ class SetTransformersCiteseer(nn.Module):
 # Synthetic dataset — single training run (unchanged)
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
+    from dataset import SetDataset
+    from citeseer import CiteseerSetDataset
+    
     data = torch.load("dataset.pt", weights_only=True)
     dataset = SetDataset.__new__(SetDataset)  # or just rebuild via constructor
     dataset.X = data["X"]
