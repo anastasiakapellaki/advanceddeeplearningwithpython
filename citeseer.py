@@ -78,8 +78,7 @@ if __name__ == "__main__":
     print(f"Directed edge entries: {data.edge_index.shape[1]}")
 
     print(f"Building fixed-size (k={MAX_NEIGHBORS}) masked neighbor sets...")
-    #data.edge_index.shape = ([2,9104]) , data.edge_index[0][k] ---> data.edge_index[1][k]
-    #neighbor_mask indicating if padding to 20 neighbors occured. if neighbor_mask[idx] is True then the citation is real.else, it is a 0-padding with no information.
+
     neighbor_idx, neighbor_mask = build_neighbor_sets(data.edge_index, n_nodes, MAX_NEIGHBORS)
 
     degrees = neighbor_mask.sum(dim=1)  #how many connection a node has
