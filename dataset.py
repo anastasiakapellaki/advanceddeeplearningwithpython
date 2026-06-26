@@ -4,7 +4,7 @@ from sklearn.model_selection import train_test_split
 import torch
 from torch.utils.data import Dataset
 
-print("Το script ξεκίνησε")
+
 def createdataset(
     n_samples=50000,
     d=16,
