@@ -51,12 +51,6 @@ def createdataset(
 
     return X, neighborfeatures, y, y_modified, neighborindices
 
-X, neighbor_features, y_original, y_modified, neighbor_indices = createdataset()
-
-print("X:", X.shape)
-print("Neighbors:", neighbor_features.shape)
-print("Original labels:", y_original.shape)
-print("Modified labels:", y_modified.shape)
 class SetDataset(Dataset):
     def __init__(self, X, neighbor_features, labels):
         self.X = torch.tensor(X, dtype=torch.float32)
@@ -88,37 +82,45 @@ class SetDataset(Dataset):
         label = self.labels[idx]
 
         return set_input, label
-   
+    
+if __name__ == '__main__':  
+    X, neighbor_features, y_original, y_modified, neighbor_indices = createdataset()
 
-dataset = SetDataset(
-    X,
-    neighbor_features,
-    y_modified
-)
+    print("X:", X.shape)
+    print("Neighbors:", neighbor_features.shape)
+    print("Original labels:", y_original.shape)
+    print("Modified labels:", y_modified.shape)
 
-# Train / val / test split, computed ONCE here so every downstream task
-    # script trains/evaluates on identical splits. Stratified on y_modified
-    # since that's the actual training target (not y_original).
-all_idx = np.arange(len(y_modified))
 
-#We use train_split in indices in order to achive consistant splitting after loading the dataset.pt in other scripts. y_modified , neighbors etc point to the same order of the 5000 samples.
-train_idx, temp_idx = train_test_split(all_idx, test_size=0.30, random_state=42, stratify=y_modified)
-val_idx, test_idx = train_test_split(temp_idx, test_size=0.50, random_state=42, stratify=y_modified[temp_idx])
+    dataset = SetDataset(
+        X,
+        neighbor_features,
+        y_modified
+    )
 
-print(f"Split sizes -> train: {len(train_idx)}, val: {len(val_idx)}, test: {len(test_idx)}")
- 
-torch.save({
-    "X": dataset.X,                      # (n_samples, d) float32 tensor
-    "neighbors": dataset.neighbors,      # (n_samples, k, d) float32 tensor
-    "y_modified": dataset.labels,        # (n_samples,) long tensor 
-    "y_original": torch.tensor(y_original, dtype=torch.long),
-    "neighbor_indices": torch.tensor(neighbor_indices, dtype=torch.long),
-    "train_idx": torch.tensor(train_idx, dtype=torch.long),
-    "val_idx": torch.tensor(val_idx, dtype=torch.long),
-    "test_idx": torch.tensor(test_idx, dtype=torch.long),
-}, "dataset.pt")
- 
-print("Saved dataset.pt (raw tensors + train/val/test indices)")
+    # Train / val / test split, computed ONCE here so every downstream task
+        # script trains/evaluates on identical splits. Stratified on y_modified
+        # since that's the actual training target (not y_original).
+    all_idx = np.arange(len(y_modified))
+
+    #We use train_split in indices in order to achive consistant splitting after loading the dataset.pt in other scripts. y_modified , neighbors etc point to the same order of the 5000 samples.
+    train_idx, temp_idx = train_test_split(all_idx, test_size=0.30, random_state=42, stratify=y_modified)
+    val_idx, test_idx = train_test_split(temp_idx, test_size=0.50, random_state=42, stratify=y_modified[temp_idx])
+
+    print(f"Split sizes -> train: {len(train_idx)}, val: {len(val_idx)}, test: {len(test_idx)}")
+    
+    torch.save({
+        "X": dataset.X,                      # (n_samples, d) float32 tensor
+        "neighbors": dataset.neighbors,      # (n_samples, k, d) float32 tensor
+        "y_modified": dataset.labels,        # (n_samples,) long tensor 
+        "y_original": torch.tensor(y_original, dtype=torch.long),
+        "neighbor_indices": torch.tensor(neighbor_indices, dtype=torch.long),
+        "train_idx": torch.tensor(train_idx, dtype=torch.long),
+        "val_idx": torch.tensor(val_idx, dtype=torch.long),
+        "test_idx": torch.tensor(test_idx, dtype=torch.long),
+    }, "dataset.pt")
+    
+    print("Saved dataset.pt (raw tensors + train/val/test indices)")
  
 #How to unpack in future scripts:
 '''

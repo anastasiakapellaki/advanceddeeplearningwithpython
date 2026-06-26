@@ -44,20 +44,14 @@ class CiteseerSetDataset(Dataset):
 
     def __getitem__(self, idx):
         point = self.x[idx].unsqueeze(0)                  # (1, d)
-
-        # Lazy gather: neighbor features are looked up from self.x here,
-        # NOT precomputed for the whole dataset (that tensor would be ~700MB
-        
+    
         mask_i = self.neighbor_mask[idx]                  # (max_neighbors,)
         neighbor_feats = self.x[self.neighbor_idx[idx]]   # (max_neighbors, d)
         neighbor_feats = neighbor_feats * mask_i.unsqueeze(-1)  # zero out padding
 
         set_input = torch.cat([point, neighbor_feats], dim=0)   # (1+max_neighbors, d)
 
-        # Point itself is always valid; prepend True to the neighbor mask.
-        # Deep Sets doesn't strictly need this (zero-padded vectors already
-        # contribute nothing to sum-pooling), but Set Transformer's attention
-        # does - a zero vector does NOT automatically get zero attention weight.
+        
         full_mask = torch.cat([
             torch.ones(1, dtype=torch.bool),
             mask_i
@@ -67,10 +61,7 @@ class CiteseerSetDataset(Dataset):
         return set_input, full_mask, label
 
 
-# Everything below only runs when this script is executed directly
-# (`python citeseer_dataset.py`), NOT when other scripts do
-# `from citeseer_dataset import CiteseerSetDataset`. Run this once to
-# produce citeseer_dataset.pt, then every task script loads that file.
+
 if __name__ == "__main__":
     MAX_NEIGHBORS = 20  # covers full neighbor set for 99.6% of nodes (13/3327 truncated)
 
